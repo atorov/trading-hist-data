@@ -1,15 +1,38 @@
 const p5Main = new p5((sketch) => {
     const s = sketch
 
-    const FRAME_RATE = 60
+    const FRAME_RATE = 3
 
     const POINTER_OFFSET = 200 * 2
 
-    const HIST_DATA_CANDLES_CHUNK_WINDOW = 84 // Must be less than POINTER_OFFSET / 2
+    // Must be less than POINTER_OFFSET / 2 and must be even number
+    const HIST_DATA_CANDLES_CHUNK_WINDOW = 50
 
     let histData
     // let histDataMax
     // let histDataMin
+
+    function drawSMA(data = [], win = 8, { strokeWeight = 1, color = [0, 127] } = {}) {
+        let sma = []
+        for (let i = 0; i < HIST_DATA_CANDLES_CHUNK_WINDOW; i++) {
+            const chunk = i ? data.slice(-(i + win), -i) : data.slice(-(i + win))
+            const element = chunk.reduce((acc, row) => acc + row[3], 0) / win
+            sma = [element, ...sma]
+        }
+        // console.log(sma)
+
+        for (let i = 0; i < sma.length; i++) {
+            s.strokeWeight(strokeWeight)
+            s.stroke(...color)
+            s.noFill()
+            s.line(
+                i * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
+                (1 - sma[i]) * s.height,
+                (i - 1) * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
+                (1 - sma[i - 1]) * s.height,
+            )
+        }
+    }
 
     s.preload = () => {
         histData = window.histDataString
@@ -47,7 +70,7 @@ const p5Main = new p5((sketch) => {
         // ---------------------------------------------------------------------
         s.noStroke()
         s.fill(127, 127, 127, 127)
-        s.rect(s.width * (3 / 4), 0, s.width * (1 / 4), s.height)
+        s.rect(s.width * (1 / 2), 0, s.width * (1 / 2), s.height)
 
         // ---------------------------------------------------------------------
         const histDataPointer = s.frameCount + POINTER_OFFSET
@@ -89,94 +112,17 @@ const p5Main = new p5((sketch) => {
                 )
             }
 
-            // SMA 200 ---------------------------------------------------------
-            const SMA200_WINDOW = 200
-            let histDataSMA200 = []
-            for (let i = 0; i < HIST_DATA_CANDLES_CHUNK_WINDOW; i++) {
-                const chunk = i ? histDataChunk.slice(-(i + SMA200_WINDOW), -i) : histDataChunk.slice(-(i + SMA200_WINDOW))
-                const sma200 = chunk.reduce((acc, row) => acc + row[3], 0) / SMA200_WINDOW
-                histDataSMA200 = [sma200, ...histDataSMA200]
-            }
-            // console.log(histDataSMA200)
+            // SMA -------------------------------------------------------------
+            drawSMA(histDataChunk, 200, { strokeWeight: 8, color: [0, 127, 255, 63] })
+            drawSMA(histDataChunk, 50, { strokeWeight: 5, color: [0, 127, 127, 63] })
+            drawSMA(histDataChunk, 21, { strokeWeight: 3, color: [0, 63, 127, 63] })
+            drawSMA(histDataChunk, 8, { strokeWeight: 2, color: [0, 127] })
+            drawSMA(histDataChunk, 8, { strokeWeight: 2, color: [0, 127] })
 
-            for (let i = 0; i < histDataSMA200.length; i++) {
-                s.strokeWeight(13)
-                s.stroke(0, 0, 127, 63)
-                s.noFill()
-                s.line(
-                    i * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
-                    (1 - histDataSMA200[i]) * s.height,
-                    (i - 1) * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
-                    (1 - histDataSMA200[i - 1]) * s.height,
-                )
-            }
+            // Last known
+            // TODO: ...
 
-            // SMA 50 ----------------------------------------------------------
-            const SMA50_WINDOW = 50
-            let histDataSMA50 = []
-            for (let i = 0; i < HIST_DATA_CANDLES_CHUNK_WINDOW; i++) {
-                const chunk = i ? histDataChunk.slice(-(i + SMA50_WINDOW), -i) : histDataChunk.slice(-(i + SMA50_WINDOW))
-                const sma200 = chunk.reduce((acc, row) => acc + row[3], 0) / SMA50_WINDOW
-                histDataSMA50 = [sma200, ...histDataSMA50]
-            }
-            // console.log(histDataSMA50)
-
-            for (let i = 0; i < histDataSMA50.length; i++) {
-                s.strokeWeight(8)
-                s.stroke(0, 0, 255, 63)
-                s.noFill()
-                s.line(
-                    i * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
-                    (1 - histDataSMA50[i]) * s.height,
-                    (i - 1) * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
-                    (1 - histDataSMA50[i - 1]) * s.height,
-                )
-            }
-
-            // SMA 21 ----------------------------------------------------------
-            const SMA21_WINDOW = 21
-            let histDataSMA21 = []
-            for (let i = 0; i < HIST_DATA_CANDLES_CHUNK_WINDOW; i++) {
-                const chunk = i ? histDataChunk.slice(-(i + SMA21_WINDOW), -i) : histDataChunk.slice(-(i + SMA21_WINDOW))
-                const sma21 = chunk.reduce((acc, row) => acc + row[3], 0) / SMA21_WINDOW
-                histDataSMA21 = [sma21, ...histDataSMA21]
-            }
-            // console.log(histDataSMA21)
-
-            for (let i = 0; i < histDataSMA21.length; i++) {
-                s.strokeWeight(5)
-                s.stroke(0, 127, 255, 63)
-                s.noFill()
-                s.line(
-                    i * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
-                    (1 - histDataSMA21[i]) * s.height,
-                    (i - 1) * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
-                    (1 - histDataSMA21[i - 1]) * s.height,
-                )
-            }
-
-            // SMA 8 ----------------------------------------------------------
-            const SMA8_WINDOW = 8
-            let histDataSMA8 = []
-            for (let i = 0; i < HIST_DATA_CANDLES_CHUNK_WINDOW; i++) {
-                const chunk = i ? histDataChunk.slice(-(i + SMA8_WINDOW), -i) : histDataChunk.slice(-(i + SMA8_WINDOW))
-                const sma8 = chunk.reduce((acc, row) => acc + row[3], 0) / SMA8_WINDOW
-                histDataSMA8 = [sma8, ...histDataSMA8]
-            }
-            // console.log(histDataSMA8)
-
-            for (let i = 0; i < histDataSMA8.length; i++) {
-                s.strokeWeight(3)
-                s.stroke(0, 255, 255, 63)
-                s.noFill()
-                s.line(
-                    i * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
-                    (1 - histDataSMA8[i]) * s.height,
-                    (i - 1) * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
-                    (1 - histDataSMA8[i - 1]) * s.height,
-                )
-            }
-
+            // -----------------------------------------------------------------
             // s.noLoop()
         }
         else {
