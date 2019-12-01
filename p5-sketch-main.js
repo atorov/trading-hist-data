@@ -3,10 +3,10 @@ const p5Main = new p5((sketch) => {
 
     const FRAME_RATE = 3
 
-    const POINTER_OFFSET = 200 * 2
+    const POINTER_OFFSET = 200
 
-    // Must be less than POINTER_OFFSET / 2 and must be even number
-    const HIST_DATA_CANDLES_CHUNK_WINDOW = 50
+    // Must be less than POINTER_OFFSET and must be even number
+    const HIST_DATA_CHART_CHUNK_WINDOW = 50
 
     let histData
     // let histDataMax
@@ -14,7 +14,7 @@ const p5Main = new p5((sketch) => {
 
     function drawSMA(data = [], win = 8, { strokeWeight = 1, color = [0, 127] } = {}) {
         let sma = []
-        for (let i = 0; i < HIST_DATA_CANDLES_CHUNK_WINDOW; i++) {
+        for (let i = 0; i < HIST_DATA_CHART_CHUNK_WINDOW; i++) {
             const chunk = i ? data.slice(-(i + win), -i) : data.slice(-(i + win))
             const element = chunk.reduce((acc, row) => acc + row[3], 0) / win
             sma = [element, ...sma]
@@ -26,9 +26,9 @@ const p5Main = new p5((sketch) => {
             s.stroke(...color)
             s.noFill()
             s.line(
-                i * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
+                i * (s.width / HIST_DATA_CHART_CHUNK_WINDOW) + (s.width / HIST_DATA_CHART_CHUNK_WINDOW / 2),
                 (1 - sma[i]) * s.height,
-                (i - 1) * (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW) + (s.width / HIST_DATA_CANDLES_CHUNK_WINDOW / 2),
+                (i - 1) * (s.width / HIST_DATA_CHART_CHUNK_WINDOW) + (s.width / HIST_DATA_CHART_CHUNK_WINDOW / 2),
                 (1 - sma[i - 1]) * s.height,
             )
         }
@@ -84,7 +84,7 @@ const p5Main = new p5((sketch) => {
             // console.log(histDataChunk)
 
             // Candles ---------------------------------------------------------
-            const histDataCandlesChunk = histDataChunk.slice(-HIST_DATA_CANDLES_CHUNK_WINDOW)
+            const histDataCandlesChunk = histDataChunk.slice(-HIST_DATA_CHART_CHUNK_WINDOW)
             // console.log(histDataCandlesChunk)
             for (let i = 0; i < histDataCandlesChunk.length; i++) {
                 const open = histDataCandlesChunk[i][0]
@@ -119,8 +119,19 @@ const p5Main = new p5((sketch) => {
             drawSMA(histDataChunk, 8, { strokeWeight: 2, color: [0, 127] })
             drawSMA(histDataChunk, 8, { strokeWeight: 2, color: [0, 127] })
 
-            // Last known
-            // TODO: ...
+            // Last known ------------------------------------------------------
+            const lastKnownPinter = histDataChunk.length - HIST_DATA_CHART_CHUNK_WINDOW / 2 - 1
+            // console.log(lastKnownPinter)
+            const lastKnown = histDataChunk[lastKnownPinter][3]
+            // console.log(lastKnown)
+            s.strokeWeight(1)
+            s.stroke(255, 0, 127)
+            s.line(
+                0,
+                (1 - lastKnown) * s.height,
+                s.width,
+                (1 - lastKnown) * s.height,
+            )
 
             // -----------------------------------------------------------------
             // s.noLoop()
