@@ -16,9 +16,9 @@
     },
     "homepage": "https://github.com/atorov/trading-hist-data#readme",
     "devDependencies": {
-        "eslint": "^6.7.2",
-        "eslint-config-airbnb-base": "^14.0.0",
-        "eslint-plugin-import": "^2.18.2",
-        "reload": "^3.0.3"
+        "eslint": "^6.8.0",
+        "eslint-config-airbnb-base": "^14.1.0",
+        "eslint-plugin-import": "^2.20.1",
+        "reload": "^3.0.4"
     }
 }
